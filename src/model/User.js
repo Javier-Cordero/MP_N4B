@@ -7,7 +7,7 @@ export default class User {
             const [existe] = await pool.execute('SELECT email FROM user WHERE email = ?', [email])
             if (existe.length > 0) throw new Error('El correo electrónico ya está en uso.')
             const obligatories = ['name', 'l_name', 'email', 'password']
-            const encrypted = await bcrypt.hash(password, 10)
+            const encrypted = await hash(password, 10)
             const guardary = [name, l_name, email, encrypted]
             const { isEmail } = validator
             if (!isEmail(email)) throw new Error('Correo electrónico inválido.')
@@ -23,27 +23,55 @@ export default class User {
             return user
         } catch (error) { console.error({ message: error.message }) }
     }
-    static async show() {
-        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM users')
+    static async update({ id, name, l_name, email, password, image }) {
+        let query = 'UPDATE user SET '
+        const campo = []
+        const valor = []
+        if (name) {
+            campo.push('name=?')
+            valor.push(name)
+        }
+        if (l_name) {
+            campo.push('l_name=?')
+            valor.push(l_name)
+        }
+        if (email) {
+            campo.push('email=?')
+            valor.push(email)
+        }
+        if (password) {
+            campo.push('password=?')
+            const encrypted = await hash(password, 10)
+            valor.push(encrypted)
+        }
+        if (image) {
+            campo.push('image=?')
+            valor.push(image)
+        }
+        if (campo.length === 0) return undefined
+        query += campo.join(', ') + ' WHERE user_id = ?'
+        valor.push(id)
+        const [resultado] = await pool.execute(query, valor)
+        return resultado
+    }
+    static async delete(id) {
+        const [resultado] = await pool.execute('DELETE FROM user WHERE user_id=?', [id])
+        return resultado
+    }
+    static async all() {
+        const [usuario] = await pool.execute('SELECT name, l_name, email, image FROM user')
         return usuario
     }
-    static async getById(id) {
-        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM users WHERE user_id =?', [id])
+    static async getId(id) {
+        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM user WHERE user_id =?', [id])
         return usuario
     }
-    static async where(campo, valor) {
-        const [usuario] = await pool.execute(`SELECT name, l_name, email, password, image FROM users WHERE ${campo} =?`, [valor])
+    static async getEmail(email) {
+        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM users WHERE email =?', [email])
         return usuario
     }
-    static async updateById({ id, name, l_name, email, password, image }) {
-        const encrypted = await hash(password, 10)
-        const [usuario] = await pool.execute(`UPDATE user SET name =?, l_name =?, email =?, password =?, image =? WHERE user_id =?`, [name, l_name, email, encrypted, image, id])
+    static async search(campo, valor) {
+        const [usuario] = await pool.execute(`SELECT name, l_name, email, password, image FROM user WHERE ${campo} =?`, [valor])
         return usuario
-    }
-    static async getByEmail(email) {
-        try {
-            const [usuario] = await pool.execute(`SELECT user_id, name, email, password, image FROM user WHERE name = ?`, [email])
-            return usuario
-        } catch (error) { console.error({ message: error.message }) }
     }
 }
