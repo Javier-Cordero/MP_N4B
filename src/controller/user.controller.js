@@ -31,6 +31,14 @@ export default class UserController {
             res.json({ message: 'Usuario eliminado' })
         } catch (error) { res.status(500).json({ message: error.message }) }
     }
+    static async UserId(req, res) {
+        try {
+            const { id } = req.params;
+            const user = await User.getId(id)
+            if (user.length === 0) return res.status(404).json({ message: 'Usuario no encontrado' })
+            res.json(user)
+        } catch (error) { res.status(500).json({ message: error.message }) }
+    }
     static async getUser(req, res) {
         try {
             const user = await User.all()

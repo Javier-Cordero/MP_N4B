@@ -63,15 +63,15 @@ export default class User {
         return usuario
     }
     static async getId(id) {
-        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM user WHERE user_id =?', [id])
+        const [usuario] = await pool.execute('SELECT name, l_name, email, image FROM user WHERE user_id =?', [id])
         return usuario
     }
     static async getEmail(email) {
-        const [usuario] = await pool.execute('SELECT name, l_name, email, password, image FROM users WHERE email =?', [email])
+        const [usuario] = await pool.execute('SELECT name, l_name, email, image FROM users WHERE email =?', [email])
         return usuario
     }
     static async search(campo, valor) {
-        const [usuario] = await pool.execute(`SELECT name, l_name, email, password, image FROM user WHERE ${campo} =?`, [valor])
+        const [usuario] = await pool.execute(`SELECT name, l_name, email, image FROM user WHERE ${campo} =?`, [valor])
         return usuario
     }
 }
